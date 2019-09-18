@@ -18,11 +18,15 @@ struct no {
 	struct no *right;
 };
 
-//PROT�TIPOS
+//PROTÓTIPOS
 
 void criarArvore(struct no **);
 struct no* inserir(int, struct no*, struct no*);
-//void listar(struct no*);
+void mostrarPrefix(struct no*);
+void mostrarInfix(struct no*);
+void mostrarPosfix(struct no*);
+struct no* limpar(struct no *);
+void removeFolha(struct no*, struct no**, int);
 
 
 /**################### MAIN ######################*/
@@ -31,12 +35,14 @@ void main(){
 	char opcao; 											//guarda a opção escolhida pelo usu�rio.
 	int insercao;                                            //guarda o numero a ser inserido na arvore.
 
-	/*Menu de op��es para manipulação da arvore*/
+	/*Menu de opções para manipulação da arvore*/
 	while(1){
-		puts("O que voce deseja fazer?");
+		puts("\nO que voce deseja fazer?");
 		puts("\tPara criar uma arvore: C");
-		//puts("\tPara listarr a arvore: L");
+		puts("\tPara mostrar a arvore: L");
 		puts("\tPara inserir um elemento na arvore: I");
+        puts("\tPara remover uma folha da arvore: F");
+        puts("\tPara esvaziar a arvore: E");
 		puts("\tPara encerrar aplicacao: S");
 		scanf(" %c", &opcao);
 
@@ -45,13 +51,31 @@ void main(){
 			case 'C':
 				criarArvore(&arvore);
 				break;
-            /*case 'L':
-                listar(arvore);
-                break;*/
+            case 'L':{
+                int choice;
+                puts("\nPara mostrar Prefix: 1");
+                puts("Para mostrar Infix: 2");
+                puts("Para mostrar Posfix: 3");
+                scanf(" %d", &choice);
+                switch (choice){
+                    case 1: mostrarPrefix(arvore); break;
+                    case 2: mostrarInfix(arvore); break;
+                    case 3: mostrarPosfix(arvore); break;
+                }
+                break;
+            }
             case 'I':
                 printf("\nDigite o numero a ser inserido: ");
                 scanf("%d", &insercao);
                 arvore = inserir(insercao, arvore, 0);
+                break;
+            case 'F':
+                printf("\nDigite o numero a ser removido: ");
+                scanf("%d", &insercao);
+                removeFolha(arvore, &arvore, insercao);
+                break;
+            case 'E':
+                arvore = limpar(arvore);
                 break;
             case 'S':
                 exit(0);
@@ -94,4 +118,58 @@ struct no* inserir(int add, struct no* i, struct no* ii){
         return novo;
     }
     
+}
+
+/** Lista elementos da árvore na forma Infixada*/
+void mostrarInfix(struct no *arvore){
+    if(!arvore) return;
+    mostrarInfix(arvore -> left);
+    printf("\n%d", arvore -> dado);
+    mostrarInfix(arvore -> right);
+}
+
+/** Lista elementos da árvore na forma Posfixada*/
+void mostrarPosfix(struct no *arvore){
+    if(!arvore) return;
+    mostrarPosfix(arvore -> left);
+    mostrarPosfix(arvore -> right);
+    printf("\n%d", arvore -> dado);
+}
+
+/** Lista elementos da árvore na forma Prefixada*/
+void mostrarPrefix(struct no *arvore){
+    if(!arvore) return;
+    printf("\n%d", arvore -> dado);
+    mostrarPrefix(arvore -> left);
+    mostrarPrefix(arvore -> right);
+}
+
+/** Função que esvazia a árvore*/
+struct no* limpar (struct no *arvore){
+    if(arvore){
+    limpar(arvore -> left);
+    limpar(arvore -> right);
+    free(arvore);
+    } else
+    return 0;
+}
+
+/**Função que remove folha da árvore, se existir*/
+void removeFolha(struct no *ant, struct no **arvore, int n){
+    struct no *aux = *arvore;
+    
+    if(!aux) return;                                                        // não achou a folha.
+
+    if(n == aux->dado && !aux->left && !aux->right){                        // se o valor for encontrado e estiver numa folha.
+    
+        if(aux == ant->right) ant->right = 0;
+        else ant->left = 0;
+
+        if(aux == ant) *arvore = 0;                                          // se possuir apenas um nó.
+
+        free(aux);
+    } else {                                                                // faz a busca.
+        if(n > aux->dado) removeFolha(aux,&(aux->right), n);
+        else removeFolha(aux,&(aux->left), n);
+    }
 }
